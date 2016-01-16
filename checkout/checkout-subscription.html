@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>Checkout subscription example</title>
-	</head>
-	<body>
-		<h1>Simple Checkout for subscriptions</h1>
-		<form action="/subscribe" method="POST">
-		  <script
-		    src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-		    data-key="pk_test_yourPublishableKey"
-		    data-image="/img/documentation/checkout/marketplace.png"
-		    data-name="SaaS Service"
-		    data-description="Gold Plan Subscription"
-		    data-amount="1999"
-		    data-panel-label="Signup for {{amount}}/month"
-		    data-label="Subscribe Now"
-		    data-locale="auto">
-		  </script>
-		</form>
-	</body>
+  <head>
+    <title>Checkout subscription example</title>
+  </head>
+  <body>
+    <h1>Simple Checkout for subscriptions</h1>
+    <form action="/subscribe" method="POST">
+      <script
+        src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+        data-key="pk_test_yourPublishableKey"
+        data-image="/img/documentation/checkout/marketplace.png"
+        data-name="SaaS Service"
+        data-description="Gold Plan Subscription"
+        data-amount="1999"
+        data-panel-label="Signup for {{amount}}/month"
+        data-label="Subscribe Now"
+        data-locale="auto">
+      </script>
+    </form>
+  </body>
 </html>
