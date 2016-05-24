@@ -50,15 +50,14 @@
             // Show the errors on the form
             $form.find('.payment-errors').text(response.error.message).addClass('alert alert-danger');
             $form.find('#' + response.error.param).parents('.form-group').addClass('has-error');
-            $form.find('button').prop('disabled', false).html('Make a payment');; // Re-enable submission
+            $form.find('button').prop('disabled', false).text('Pay $20'); // Re-enable submission
           } 
           else { // Token was created!
             // Get the token ID:
             var token = response.id;
 
-            // Insert the token and name into the form so it gets submitted to the server:
+            // Insert the token into the form so it gets submitted to the server:
             $form.append($('<input type="hidden" name="stripeToken" />').val(token));
-            $form.append($('<input type="hidden" name="name" />').val(name));
 
             // Submit the form:
             $form.get(0).submit();
@@ -75,7 +74,7 @@
                   <div class="col-md-12">
                     <div class="form-group">
                       <label>Cardholder Name</label>
-                      <input class="form-control input-lg" id="name" type="text" placeholder="Jimmy Dean">
+                      <input class="form-control input-lg" id="name" name="name" type="text" placeholder="Jimmy Dean">
                     </div>
                   </div>
                 </div>
@@ -109,7 +108,7 @@
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <button class="btn btn-lg btn-block btn-success submit" type="submit">Make a payment</button>
+                    <button class="btn btn-lg btn-block btn-success submit" type="submit">Pay $20</button>
                   </div>
                 </div>
               </form>
