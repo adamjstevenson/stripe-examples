@@ -7,14 +7,16 @@
     <div class="container">
       <div class="row">
         <div class="col-md-12 text-center">
-          <h1>A simple Bootstrap Stripe.js payment form</h1>
+          <h1>A better Bootstrap Stripe.js payment form</h1>
         </div>
       </div>
-      <!-- Simple Bootstrap payment form starts here -->
+      <!-- Better Bootstrap payment form starts here -->
       <!-- Use Jquery in this example -->
       <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
       <!-- Bootstrap CSS -->
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+      <!-- Font Awesome for prettier icons -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
       <!-- Bootstrap JavaScript -->
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
       <!-- Stripe.js to collect payment details -->
@@ -28,37 +30,58 @@
         $(function() {
           var $form = $('#payment-form');
           $form.submit(function(event) {
+            // Clear any errors
+            $form.find('.has-error').removeClass('has-error')
+
+            // Validate the form isn't empty before requesting a token
+            invalidForm = false;
+            $('#payment-form input').each(function() {
+              if ($(this).val() == '') { 
+                $('#'+this.id).parent('.form-group').addClass('has-error');
+                invalidForm = true;
+              }
+            });
+            if (invalidForm){
+              return false;
+            }
+
             // Disable the submit button to prevent repeated clicks:
-            $form.find('.submit').prop('disabled', true).html('Please wait...');
+            $form.find('.submit').prop('disabled', true).html("<i class='fa fa-spinner fa-spin'></i> Making payment...");
 
             // Request a token from Stripe:
             Stripe.card.createToken($form, stripeResponseHandler);
-
+            
             // Prevent the form from being submitted:
             return false;
           });
 
-          // Format the card number
+          // Formatting
           $('#number').payment('formatCardNumber');
+          $('#cc_exp').payment('formatCardExpiry');
+
+          // Determine & display the card brand
+          $('#number').keyup(function() {
+            card_type = $.payment.cardType($('#number').val());
+            card_type ? $('#card_type').html("<i class='text-success fa fa-cc-"+card_type+"'></i>") : $('#card_type').html("");
+          });
         });
 
         function stripeResponseHandler(status, response) {
           var $form = $('#payment-form');
-          $form.find('.has-error').removeClass('has-error')
 
           if (response.error) {
             // Show the errors on the form
             $form.find('.payment-errors').text(response.error.message).addClass('alert alert-danger');
-            $form.find('#' + response.error.param).parents('.form-group').addClass('has-error');
-            $form.find('button').prop('disabled', false).html('Make a payment');; // Re-enable submission
+            $form.find('#' + response.error.param).parent('.form-group').addClass('has-error');
+            $form.find('button').prop('disabled', false).text('Pay $20'); // Re-enable submission
           } 
           else { // Token was created!
+            $form.find('.submit').html("<i class='fa fa-check'></i> Payment accepted");
             // Get the token ID:
             var token = response.id;
 
             // Insert the token and name into the form so it gets submitted to the server:
             $form.append($('<input type="hidden" name="stripeToken" />').val(token));
-            $form.append($('<input type="hidden" name="name" />').val(name));
 
             // Submit the form:
             $form.get(0).submit();
@@ -66,8 +89,11 @@
         }
       </script>
       <div class="row">
-        <div class="col-md-6 col-md-offset-3">
+        <div class="col-md-4 col-md-offset-4">
           <div class="panel panel-default">
+            <div class="panel-heading text-center">
+              <h4><span id="card_type"></span> Make a $20 payment</h4>
+            </div>
             <div class="panel-body">
               <form action="" method="POST" id="payment-form">
                 <div class="payment-errors"></div>
@@ -75,7 +101,7 @@
                   <div class="col-md-12">
                     <div class="form-group">
                       <label>Cardholder Name</label>
-                      <input class="form-control input-lg" id="name" type="text" placeholder="Jimmy Dean">
+                      <input class="form-control input-lg" id="name" type="text" data-stripe="name" placeholder="Jimmy Dean">
                     </div>
                   </div>
                 </div>
@@ -88,28 +114,22 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-md-3 col-sm-3 col-xs-4">
+                  <div class="col-md-7">
                     <div class="form-group">
-                      <label>Exp Month</label>
-                      <input class="form-control input-lg" id="exp_month" type="tel" size="2" data-stripe="exp-month" placeholder="01">
+                      <label>Expiry</label>
+                      <input class="form-control input-lg" id="cc_exp" type="tel" size="2" data-stripe="exp" placeholder="MM / YY">
                     </div>
                   </div>
-                  <div class="col-md-3 col-sm-3 col-xs-4">
+                  <div class="col-md-5">
                     <div class="form-group">
-                      <label>Exp Year</label>
-                      <input class="form-control input-lg" id="exp_year" type="tel" size="4" data-stripe="exp-year" placeholder="2020">
-                    </div>
-                  </div>
-                  <div class="col-md-6 col-sm-3 col-xs-4">
-                    <div class="form-group pull-right">
                       <label>CVC</label>
-                      <input class="form-control input-lg" id="cvc" type="tel" size="4" data-stripe="cvc" placeholder="555">
+                      <input class="form-control input-lg" id="cvc" type="tel" size="4" data-stripe="cvc" placeholder="555" autocomplete="off">
                     </div>
                   </div>
                 </div>
                 <div class="row">
                   <div class="col-md-12">
-                    <button class="btn btn-lg btn-block btn-success submit" type="submit">Make a payment</button>
+                    <button class="btn btn-lg btn-block btn-success submit" type="submit">Pay $20</button>
                   </div>
                 </div>
               </form>
@@ -117,7 +137,7 @@
           </div>
         </div>
       </div>
-      <!-- Simple Bootstrap payment form ends here -->
+      <!-- Better Bootstrap payment form ends here -->
     </div>
   </body>
 </html>
