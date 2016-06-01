@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Bootstrap Stripe.js example bank account form</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <h1>A Bootstrap Stripe.js bank account form</h1>
+        </div>
+      </div>
+      <!-- Bootstrap Stripe.js bank account form starts here -->
+      <!-- Use Jquery in this example -->
+      <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+      <!-- Font Awesome for prettier icons -->
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+      <!-- Bootstrap JavaScript -->
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+      <!-- Stripe.js to collect payment details -->
+      <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+      <script>
+        // Set your Stripe publishable API key here
+        Stripe.setPublishableKey('pk_test_6pRNASCoBOKtIshFeQd4XMUh');
+
+        $(function() {
+          var $form = $('#payment-form');
+          $form.submit(function(event) {
+            // Clear any errors
+            $form.find('.has-error').removeClass('has-error');
+
+            // Disable the submit button to prevent repeated clicks:
+            $form.find('.submit').prop('disabled', true).html("<i class='fa fa-spinner fa-spin'></i> Creating account");
+
+            // Request a token from Stripe:
+            Stripe.bankAccount.createToken($form, stripeResponseHandler);
+            
+            // Prevent the form from being submitted:
+            return false;
+          });
+
+          // Switch or hide 'routing number' depending on currency
+          $('#currency').change(function(){
+            $('#routing_number_div').show();
+            $('#account_number_label').text('Account Number').next('input').attr('placeholder', '');
+            $('#routing_number').attr('data-stripe', 'routing_number');
+            switch (this.value) {
+              case "usd":
+                $('#routing_number_label').text('Routing Number').next('input').attr('placeholder', '111000000');
+                break;
+              case "eur":
+                // No routing number needed
+                $('#routing_number_div').hide();
+                $('#routing_number').removeAttr('data-stripe');
+                $('#account_number_label').text('IBAN').next('input').attr('placeholder','XX9828737432389');
+                break;
+              case "cad":
+                $('#routing_number_label').text('Transit & Institution Number');
+                break;
+              case "gbp":
+                $('#routing_number_label').text('Sort Code').next('input').attr('placeholder', '12-34-56');
+                break;
+              case "mxn":
+                $('#routing_number_label').text('CLABE');
+                break;
+              case 'aud': case "nzd":
+                $('#routing_number_label').text('BSB').next('input').attr('placeholder', '123456');
+                break;
+              case 'sgd': case "jpy": case "brl": case "hkd":
+                $('#routing_number_label').text('Bank / Branch Code');
+                break;
+            }
+          });
+        });
+
+        function stripeResponseHandler(status, response) {
+          var $form = $('#payment-form');
+
+          if (response.error) {
+            // Show the errors on the form
+            $form.find('.errors').text(response.error.message).addClass('alert alert-danger');
+            $form.find('.' + response.error.param).parent('.form-group').addClass('has-error');
+            $form.find('button').prop('disabled', false).text('Pay $20'); // Re-enable submission
+          } 
+          else { // Token was created!
+            $form.find('.submit').html("<i class='fa fa-check'></i> Account added");
+            
+            // Get the token ID:
+            var token = response.id;
+
+            // Insert the token and name into the form so it gets submitted to the server:
+            $form.append($('<input type="hidden" name="stripeToken" />').val(token));
+
+            // Submit the form:
+            $form.get(0).submit();
+          }
+        }
+      </script>
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <div class="panel panel-default">
+            <div class="panel-heading text-center">
+              <h4><span id="card_type"></span> Add a bank account</h4>
+            </div>
+            <div class="panel-body">
+              <form action="" method="POST" id="payment-form">
+                <div class="errors"></div>
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="form-group">
+                      <label>Country</label>
+                      <select class="form-control input-lg" id="country" data-stripe="country">
+                        <option value="US">United States</option>
+                        <option value="AU">Australia</option>
+                        <option value="AT">Austria</option>
+                        <option value="BE">Belgium</option>
+                        <option value="BR">Brazil</option>
+                        <option value="CA">Canada</option>
+                        <option value="DK">Denmark</option>
+                        <option value="FI">Finland</option>
+                        <option value="FR">France</option>
+                        <option value="DE">Germany</option>
+                        <option value="HK">Hong Kong</option>
+                        <option value="IE">Ireland</option>
+                        <option value="IT">Italy</option>
+                        <option value="JP">Japan</option>
+                        <option value="LU">Luxembourg</option>
+                        <option value="MX">Mexico</option>
+                        <option value="NZ">New Zealand</option>
+                        <option value="NL">Netherlands</option>
+                        <option value="NO">Norway</option>
+                        <option value="PT">Portugal</option>
+                        <option value="SG">Singapore</option>
+                        <option value="ES">Spain</option>
+                        <option value="SE">Sweden</option>
+                        <option value="CH">Switzerland</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label>Currency</label>
+                      <select class="form-control input-lg" id="currency" data-stripe="currency">
+                        <option value="usd">USD</option>
+                        <option value="aud">AUD</option>
+                        <option value="brl">BRL</option>
+                        <option value="cad">CAD</option>
+                        <option value="eur">EUR</option>
+                        <option value="gbp">GBP</option>
+                        <option value="hkd">HKD</option>
+                        <option value="jpy">JPY</option>
+                        <option value="mxn">MXN</option>
+                        <option value="nzd">NZD</option>
+                        <option value="sgd">SGD</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Full Legal Name</label>
+                      <input class="form-control input-lg account_holder_name" id="account_holder_name" type="text" data-stripe="account_holder_name" placeholder="Jane Doe">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Account Type</label>
+                      <select class="form-control input-lg account_holder_type" id="account_holder_type" data-stripe="account_holder_type">
+                        <option value="individual">Individual</option>
+                        <option value="company">Company</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6" id="routing_number_div">
+                    <div class="form-group">
+                      <label id="routing_number_label">Routing Number</label>
+                      <input class="form-control input-lg bank_account" id="routing_number" type="tel" size="12" data-stripe="routing_number" placeholder="111000025">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label id="account_number_label">Account Number</label>
+                      <input class="form-control input-lg bank_account" id="account_number" type="tel" size="20" data-stripe="account_number" placeholder="000123456789">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <button class="btn btn-lg btn-block btn-success submit" type="submit">Add bank account</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Better Bootstrap payment form ends here -->
+    </div>
+  </body>
+</html>
