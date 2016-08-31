@@ -28,14 +28,21 @@
         <div class='error'><?php echo $error; ?></div>
       <?php endif ?> 
       <form action="" method="POST" class="spacing">
+        <h2>Select a plan</h2>
+        <select name="plan">
+          <option value="silver">Silver</option>
+          <option value="gold">Gold</option>
+          <option value="platinum">Platinum</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
+        <p></p>
         <script
           src="https://checkout.stripe.com/checkout.js" class="stripe-button"
           data-key="<?= $stripe['publishable_key']; ?>"
           data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
           data-name="SaaS Service"
-          data-description="Gold Plan Subscription"
-          data-amount="2000"
-          data-panel-label="Signup for {{amount}}/month"
+          data-description="Start a subscription"
+          data-panel-label="Subscribe Now"
           data-label="Subscribe Now"
           data-locale="auto">
         </script>
